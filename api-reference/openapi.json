@@ -1,195 +1,1251 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.3",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
+    "title": "Tron Marketplace",
+    "description": "Tron marketplace API specification",
     "version": "1.0.0"
   },
-  "servers": [
+  "tags": [
     {
-      "url": "http://sandbox.mintlify.com"
-    }
-  ],
-  "security": [
+      "name": "user",
+      "description": "Endpoints for user data and management"
+    },
     {
-      "bearerAuth": []
+      "name": "market",
+      "description": "Endpoints for getting general info about the marketplace"
+    },
+    {
+      "name": "wallet",
+      "description": "Endpoints for managing wallet data of authenticated user"
+    },
+    {
+      "name": "orders",
+      "description": "Endpoints for managing and fetching orders"
+    },
+    {
+      "name": "public orders",
+      "description": "Endpoints for creating public orders"
     }
   ],
   "paths": {
-    "/plants": {
+    "/api/orders/": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
+            "description": "Number of items to fetch per page",
             "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
+              "type": "number",
+              "default": 10
+            },
+            "in": "query",
+            "name": "perPage",
+            "required": true
+          },
+          {
+            "description": "Page number to fetch. If not provided, the first page will be fetched",
+            "schema": {
+              "type": "number"
+            },
+            "in": "query",
+            "name": "page",
+            "required": false
+          },
+          {
+            "description": "Filter orders by wallet",
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "wallet",
+            "required": false
+          },
+          {
+            "description": "Exclude orders by wallet",
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "exclude",
+            "required": false
           }
         ],
+        "operationId": "getApiOrders",
+        "tags": [
+          "orders"
+        ],
+        "description": "Get all orders in descending order by creation date",
         "responses": {
-          "200": {
-            "description": "Plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
+          "200": {}
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/api/orders/{id}": {
+      "get": {
+        "operationId": "getApiOrdersById",
+        "tags": [
+          "orders"
+        ],
+        "description": "Get data of a specific order",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+          "200": {}
+        }
+      }
+    },
+    "/api/orders/fulfill": {
+      "post": {
+        "parameters": [
+          {
+            "description": "A valid Tron wallet address owned by user making the request",
+            "schema": {
+              "type": "string",
+              "pattern": "T[A-Za-z1-9]{33}"
+            },
+            "in": "header",
+            "name": "x-wallet",
+            "required": true
+          }
+        ],
+        "operationId": "postApiOrdersFulfill",
+        "tags": [
+          "orders"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "number"
+                  },
+                  "tx": {
+                    "type": "string"
+                  },
+                  "signature": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "payoutAddress": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "tx",
+                  "signature",
+                  "payoutAddress"
+                ]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "number"
+                  },
+                  "tx": {
+                    "type": "string"
+                  },
+                  "signature": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "payoutAddress": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "tx",
+                  "signature",
+                  "payoutAddress"
+                ]
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "number"
+                  },
+                  "tx": {
+                    "type": "string"
+                  },
+                  "signature": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "payoutAddress": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "tx",
+                  "signature",
+                  "payoutAddress"
+                ]
               }
             }
           }
+        },
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/api/orders/place": {
+      "post": {
+        "parameters": [
+          {
+            "description": "A valid Tron wallet address owned by user making the request",
+            "schema": {
+              "type": "string",
+              "pattern": "T[A-Za-z1-9]{33}"
+            },
+            "in": "header",
+            "name": "x-wallet",
+            "required": true
+          }
+        ],
+        "operationId": "postApiOrdersPlace",
+        "tags": [
+          "orders"
+        ],
+        "description": "Place a new buy order",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resourceType": {
+                    "anyOf": [
+                      {
+                        "const": "ENERGY",
+                        "type": "string"
+                      },
+                      {
+                        "const": "BANDWIDTH",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "resourceAmount": {
+                    "type": "number"
+                  },
+                  "price": {
+                    "type": "number"
+                  },
+                  "duration": {
+                    "type": "number"
+                  },
+                  "targetAddress": {
+                    "type": "string"
+                  },
+                  "signature": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "txId": {
+                    "type": "string"
+                  },
+                  "partialFill": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "resourceType",
+                  "resourceAmount",
+                  "price",
+                  "duration",
+                  "targetAddress",
+                  "signature",
+                  "txId",
+                  "partialFill"
+                ]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resourceType": {
+                    "anyOf": [
+                      {
+                        "const": "ENERGY",
+                        "type": "string"
+                      },
+                      {
+                        "const": "BANDWIDTH",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "resourceAmount": {
+                    "type": "number"
+                  },
+                  "price": {
+                    "type": "number"
+                  },
+                  "duration": {
+                    "type": "number"
+                  },
+                  "targetAddress": {
+                    "type": "string"
+                  },
+                  "signature": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "txId": {
+                    "type": "string"
+                  },
+                  "partialFill": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "resourceType",
+                  "resourceAmount",
+                  "price",
+                  "duration",
+                  "targetAddress",
+                  "signature",
+                  "txId",
+                  "partialFill"
+                ]
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resourceType": {
+                    "anyOf": [
+                      {
+                        "const": "ENERGY",
+                        "type": "string"
+                      },
+                      {
+                        "const": "BANDWIDTH",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "resourceAmount": {
+                    "type": "number"
+                  },
+                  "price": {
+                    "type": "number"
+                  },
+                  "duration": {
+                    "type": "number"
+                  },
+                  "targetAddress": {
+                    "type": "string"
+                  },
+                  "signature": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "txId": {
+                    "type": "string"
+                  },
+                  "partialFill": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "resourceType",
+                  "resourceAmount",
+                  "price",
+                  "duration",
+                  "targetAddress",
+                  "signature",
+                  "txId",
+                  "partialFill"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/api/transactions/{orderId}": {
+      "get": {
+        "operationId": "getApiTransactionsByOrderId",
+        "tags": [
+          "transactions"
+        ],
+        "description": "Get all transactions of a specific order",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "orderId",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/api/transactions/": {
+      "get": {
+        "parameters": [
+          {
+            "description": "A valid Tron wallet address owned by user making the request",
+            "schema": {
+              "type": "string",
+              "pattern": "T[A-Za-z1-9]{33}"
+            },
+            "in": "header",
+            "name": "x-wallet",
+            "required": true
+          },
+          {
+            "description": "Number of items to fetch per page",
+            "schema": {
+              "type": "number",
+              "default": 10
+            },
+            "in": "query",
+            "name": "perPage",
+            "required": true
+          },
+          {
+            "description": "Page number to fetch. If not provided, the first page will be fetched",
+            "schema": {
+              "type": "number"
+            },
+            "in": "query",
+            "name": "page",
+            "required": false
+          }
+        ],
+        "operationId": "getApiTransactions",
+        "tags": [
+          "transactions"
+        ],
+        "description": "Get all transactions of a specific wallet",
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/api/market/info": {
+      "get": {
+        "operationId": "getApiMarketInfo",
+        "tags": [
+          "market"
+        ],
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/api/market/update": {
+      "put": {
+        "parameters": [
+          {
+            "description": "A valid password",
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "x-password",
+            "required": true
+          }
+        ],
+        "operationId": "putApiMarketUpdate",
+        "tags": [
+          "market"
+        ],
+        "description": "Update market data",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "address": {
+                    "type": "string"
+                  },
+                  "availableEnergy": {
+                    "type": "number"
+                  },
+                  "availableBandwidth": {
+                    "type": "number"
+                  },
+                  "energyPrices": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "minDuration": {
+                          "type": "number"
+                        },
+                        "minPrice": {
+                          "type": "number"
+                        },
+                        "suggestedPrice": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "minDuration",
+                        "minPrice",
+                        "suggestedPrice"
+                      ]
+                    }
+                  },
+                  "bandwidthPrices": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "minDuration": {
+                          "type": "number"
+                        },
+                        "minPrice": {
+                          "type": "number"
+                        },
+                        "suggestedPrice": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "minDuration",
+                        "minPrice",
+                        "suggestedPrice"
+                      ]
+                    }
+                  },
+                  "minEnergy": {
+                    "type": "number"
+                  },
+                  "suggestedEnergy": {
+                    "type": "number"
+                  },
+                  "minBandwidth": {
+                    "type": "number"
+                  },
+                  "suggestedBandwidth": {
+                    "type": "number"
+                  },
+                  "minFillEnergy": {
+                    "type": "number"
+                  },
+                  "minFillBandwidth": {
+                    "type": "number"
+                  },
+                  "fillOrderAward": {
+                    "type": "number"
+                  },
+                  "suggestedDuration": {
+                    "type": "number"
+                  },
+                  "durations": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "referral": {
+                    "type": "object",
+                    "properties": {
+                      "reward": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "reward"
+                    ]
+                  }
+                },
+                "required": [
+                  "energyPrices",
+                  "bandwidthPrices",
+                  "minEnergy",
+                  "suggestedEnergy",
+                  "minBandwidth",
+                  "suggestedBandwidth",
+                  "minFillEnergy",
+                  "minFillBandwidth",
+                  "fillOrderAward",
+                  "suggestedDuration",
+                  "durations"
+                ]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "address": {
+                    "type": "string"
+                  },
+                  "availableEnergy": {
+                    "type": "number"
+                  },
+                  "availableBandwidth": {
+                    "type": "number"
+                  },
+                  "energyPrices": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "minDuration": {
+                          "type": "number"
+                        },
+                        "minPrice": {
+                          "type": "number"
+                        },
+                        "suggestedPrice": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "minDuration",
+                        "minPrice",
+                        "suggestedPrice"
+                      ]
+                    }
+                  },
+                  "bandwidthPrices": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "minDuration": {
+                          "type": "number"
+                        },
+                        "minPrice": {
+                          "type": "number"
+                        },
+                        "suggestedPrice": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "minDuration",
+                        "minPrice",
+                        "suggestedPrice"
+                      ]
+                    }
+                  },
+                  "minEnergy": {
+                    "type": "number"
+                  },
+                  "suggestedEnergy": {
+                    "type": "number"
+                  },
+                  "minBandwidth": {
+                    "type": "number"
+                  },
+                  "suggestedBandwidth": {
+                    "type": "number"
+                  },
+                  "minFillEnergy": {
+                    "type": "number"
+                  },
+                  "minFillBandwidth": {
+                    "type": "number"
+                  },
+                  "fillOrderAward": {
+                    "type": "number"
+                  },
+                  "suggestedDuration": {
+                    "type": "number"
+                  },
+                  "durations": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "referral": {
+                    "type": "object",
+                    "properties": {
+                      "reward": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "reward"
+                    ]
+                  }
+                },
+                "required": [
+                  "energyPrices",
+                  "bandwidthPrices",
+                  "minEnergy",
+                  "suggestedEnergy",
+                  "minBandwidth",
+                  "suggestedBandwidth",
+                  "minFillEnergy",
+                  "minFillBandwidth",
+                  "fillOrderAward",
+                  "suggestedDuration",
+                  "durations"
+                ]
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "address": {
+                    "type": "string"
+                  },
+                  "availableEnergy": {
+                    "type": "number"
+                  },
+                  "availableBandwidth": {
+                    "type": "number"
+                  },
+                  "energyPrices": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "minDuration": {
+                          "type": "number"
+                        },
+                        "minPrice": {
+                          "type": "number"
+                        },
+                        "suggestedPrice": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "minDuration",
+                        "minPrice",
+                        "suggestedPrice"
+                      ]
+                    }
+                  },
+                  "bandwidthPrices": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "minDuration": {
+                          "type": "number"
+                        },
+                        "minPrice": {
+                          "type": "number"
+                        },
+                        "suggestedPrice": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "minDuration",
+                        "minPrice",
+                        "suggestedPrice"
+                      ]
+                    }
+                  },
+                  "minEnergy": {
+                    "type": "number"
+                  },
+                  "suggestedEnergy": {
+                    "type": "number"
+                  },
+                  "minBandwidth": {
+                    "type": "number"
+                  },
+                  "suggestedBandwidth": {
+                    "type": "number"
+                  },
+                  "minFillEnergy": {
+                    "type": "number"
+                  },
+                  "minFillBandwidth": {
+                    "type": "number"
+                  },
+                  "fillOrderAward": {
+                    "type": "number"
+                  },
+                  "suggestedDuration": {
+                    "type": "number"
+                  },
+                  "durations": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "referral": {
+                    "type": "object",
+                    "properties": {
+                      "reward": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "reward"
+                    ]
+                  }
+                },
+                "required": [
+                  "energyPrices",
+                  "bandwidthPrices",
+                  "minEnergy",
+                  "suggestedEnergy",
+                  "minBandwidth",
+                  "suggestedBandwidth",
+                  "minFillEnergy",
+                  "minFillBandwidth",
+                  "fillOrderAward",
+                  "suggestedDuration",
+                  "durations"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/api/public/user/{userId}": {
+      "get": {
+        "operationId": "getApiPublicUserByUserId",
+        "tags": [
+          "public api"
+        ],
+        "description": "Get the status of a api user",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "userId",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/api/public/order/{orderId}": {
+      "get": {
+        "operationId": "getApiPublicOrderByOrderId",
+        "tags": [
+          "public api"
+        ],
+        "description": "Get the status of a public order",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "orderId",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/api/public/order": {
+      "post": {
+        "parameters": [
+          {
+            "description": "A valid API key for authentication",
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "x-api-key",
+            "required": true
+          }
+        ],
+        "operationId": "postApiPublicOrder",
+        "tags": [
+          "public api"
+        ],
+        "description": "Create a single or bulk public order",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resourceType": {
+                    "const": 0,
+                    "type": "number"
+                  },
+                  "resourceAmount": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "duration": {
+                    "anyOf": [
+                      {
+                        "const": "5m",
+                        "type": "string"
+                      },
+                      {
+                        "const": "15m",
+                        "type": "string"
+                      },
+                      {
+                        "const": "1h",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "targetAddress": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "resourceType",
+                  "resourceAmount",
+                  "duration",
+                  "targetAddress"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resourceType": {
+                    "const": 0,
+                    "type": "number"
+                  },
+                  "resourceAmount": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "duration": {
+                    "anyOf": [
+                      {
+                        "const": "5m",
+                        "type": "string"
+                      },
+                      {
+                        "const": "15m",
+                        "type": "string"
+                      },
+                      {
+                        "const": "1h",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "targetAddress": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "resourceType",
+                  "resourceAmount",
+                  "duration",
+                  "targetAddress"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resourceType": {
+                    "const": 0,
+                    "type": "number"
+                  },
+                  "resourceAmount": {
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "duration": {
+                    "anyOf": [
+                      {
+                        "const": "5m",
+                        "type": "string"
+                      },
+                      {
+                        "const": "15m",
+                        "type": "string"
+                      },
+                      {
+                        "const": "1h",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "targetAddress": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "resourceType",
+                  "resourceAmount",
+                  "duration",
+                  "targetAddress"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/api/users/": {
+      "get": {
+        "parameters": [
+          {
+            "description": "A valid password",
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "x-password",
+            "required": true
+          }
+        ],
+        "operationId": "getApiUsers",
+        "tags": [
+          "users"
+        ],
+        "description": "Get all users",
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/api/users/create": {
+      "post": {
+        "parameters": [
+          {
+            "description": "A valid password",
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "x-password",
+            "required": true
+          }
+        ],
+        "operationId": "postApiUsersCreate",
+        "tags": [
+          "users"
+        ],
+        "description": "Create a new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "wallet": {
+                    "description": "A valid Tron wallet address",
+                    "pattern": "T[A-Za-z1-9]{33}",
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "priceFor5Min": {
+                    "type": "number"
+                  },
+                  "priceFor15Min": {
+                    "type": "number"
+                  },
+                  "priceFor1H": {
+                    "type": "number"
+                  },
+                  "minResource": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "wallet",
+                  "name",
+                  "priceFor5Min",
+                  "priceFor15Min",
+                  "priceFor1H",
+                  "minResource"
+                ]
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "wallet": {
+                    "description": "A valid Tron wallet address",
+                    "pattern": "T[A-Za-z1-9]{33}",
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "priceFor5Min": {
+                    "type": "number"
+                  },
+                  "priceFor15Min": {
+                    "type": "number"
+                  },
+                  "priceFor1H": {
+                    "type": "number"
+                  },
+                  "minResource": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "wallet",
+                  "name",
+                  "priceFor5Min",
+                  "priceFor15Min",
+                  "priceFor1H",
+                  "minResource"
+                ]
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "wallet": {
+                    "description": "A valid Tron wallet address",
+                    "pattern": "T[A-Za-z1-9]{33}",
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "priceFor5Min": {
+                    "type": "number"
+                  },
+                  "priceFor15Min": {
+                    "type": "number"
+                  },
+                  "priceFor1H": {
+                    "type": "number"
+                  },
+                  "minResource": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "wallet",
+                  "name",
+                  "priceFor5Min",
+                  "priceFor15Min",
+                  "priceFor1H",
+                  "minResource"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/api/docs": {
+      "get": {
+        "operationId": "getApiDocs",
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/api/docs/json": {
+      "get": {
+        "operationId": "getApiDocsJson",
+        "responses": {
+          "200": {}
         }
       }
     }
   },
   "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
-      }
-    }
+    "schemas": {}
   }
 }
