@@ -1,0 +1,100 @@
+---
+title: 'GET User'
+description: 'Retrieve user details and associated orders'
+---
+
+## Get User Details
+
+Retrieve detailed information about a user including their pricing configuration and order history.
+
+### Endpoint
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the user
+</ParamField>
+
+```bash
+GET https://tronspace.vip/api/public/user/{id}
+```
+
+### Authentication
+
+<Note>
+  Not required
+</Note>
+
+### Response
+
+<ResponseField name="id" type="string">
+  Unique identifier of the user
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  User's display name
+</ResponseField>
+
+<ResponseField name="status" type="enum">
+  Current user status (ACTIVE, INACTIVE)
+</ResponseField>
+
+<ResponseField name="wallet" type="string">
+  TRON wallet address
+</ResponseField>
+
+<ResponseField name="priceFor5Min" type="number">
+  Price rate for 5 minute duration
+</ResponseField>
+
+<ResponseField name="priceFor15Min" type="number">
+  Price rate for 15 minute duration
+</ResponseField>
+
+<ResponseField name="priceFor1H" type="number">
+  Price rate for 1 hour duration
+</ResponseField>
+
+<ResponseField name="orders" type="array">
+  List of user's orders with transaction details
+</ResponseField>
+
+### Example Response
+
+```json
+{
+  "json": {
+    "id": "198dc9ba-39f8-479d-b156-cac11ca5cc8d",
+    "name": "User",
+    "status": "ACTIVE",
+    "createdAt": "2025-01-16T10:37:53.293Z",
+    "updatedAt": "2025-01-16T10:37:53.293Z",
+    "wallet": "TAA9KiqKZSU2tUhqrPpYBHPprxnKVwnik5",
+    "role": "USER",
+    "priceFor5Min": 100,
+    "priceFor15Min": 80,
+    "priceFor1H": 60,
+    "minResource": 60000,
+    "orders": [
+      {
+        "id": "65b232ed-630e-4904-8f40-60671f1afe1b",
+        "resourceType": "ENERGY",
+        "resourceAmount": 60001,
+        "resourceAmountSun": "5325147542",
+        "duration": "FIVE_MIN",
+        "status": "PAYMENT_FAILED",
+        "payment": "6000100",
+        "paymentDue": "2025-01-16T12:59:30.720Z",
+        "targetAddress": ["TAA9KiqKZSU2tUhqrPpYBHPprxnKVwnik5"]
+      }
+    ]
+  },
+  "meta": {
+    "values": {
+      "createdAt": ["Date"],
+      "updatedAt": ["Date"],
+      "orders.0.resourceAmountSun": ["bigint"],
+      "orders.0.payment": ["bigint"],
+      "orders.0.paymentDue": ["Date"]
+    }
+  }
+}
+```

@@ -1,33 +1,52 @@
 ---
 title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+description: 'Tronspace public API points'
 ---
-
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
-
-## Welcome
-
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
-
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+ Creating orders require authentication using an `x-api-key` header. You must include a valid API key in every request.
+
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
+{
+  "headers": {
+    "x-api-key": "your-api-key-here"
   }
-]
+}
 ```
+
+<Warning> Keep your API key secure and never share it in public repositories or client-side code. If you believe your API key has been compromised, contact support immediately for a replacement. </Warning>
+
+## Response Format
+
+All API endpoints return [SuperJSON](https://github.com/blitz-js/superjson) formatted responses. The response contains two main fields:
+
+- `json`: The actual response data
+- `meta`: Type information for special data types (Date, BigInt, etc)
+
+```json
+{
+  "json": {
+    "id": "198dc9ba-39f8-479d-b156-cac11ca5cc8d",
+    "name": "User",
+    "createdAt": "2025-01-16T10:37:53.293Z",
+    "wallet": "TAA9KiqKZSU2tUhqrPpYBHPprxnKVwnik5",
+    "orders": [
+      {
+        "resourceAmountSun": "5325147542",
+        "payment": "6000100"
+      }
+    ]
+  },
+  "meta": {
+    "values": {
+      "createdAt": ["Date"],
+      "orders.0.resourceAmountSun": ["bigint"],
+      "orders.0.payment": ["bigint"]
+    }
+  }
+}
+```
+
+<Note> When processing the response, use the `meta` field to properly decode special types: - Dates will be ISO strings in `json` but marked as `Date` in meta - Large numbers will be strings in `json` but marked as `bigint` in meta </Note>
