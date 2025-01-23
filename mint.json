@@ -49,6 +49,7 @@
       "group": "Public endpoints",
       "pages": [
         "api-reference/endpoint/get-user",
+        "api-reference/endpoint/get-order",
         "api-reference/endpoint/post-order"
       ]
     }

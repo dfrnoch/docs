@@ -1,4 +1,126 @@
 ---
 title: 'GET Order'
+description: 'Retrieve an existing TRON resource order'
 ---
 
+## Get Order
+
+Retrieve details of an existing TRON network resource order.
+
+### Endpoint
+
+```bash
+GET https://tronspace.vip/api/public/order/{id}
+```
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  Order ID (UUID v4) to retrieve
+</ParamField>
+
+## Response
+
+### Response Fields
+
+#### Order Information
+<ResponseField name="id" type="string">
+  Unique order identifier (UUID v4)
+</ResponseField>
+
+<ResponseField name="status" type="enum">
+  Order status:
+  - `PAYMENT_PENDING` - Initial state, awaiting payment
+  - `PAYMENT_FAILED` - Payment not received by paymentDue
+  - `PAYMENT_CONFIRMED` - Payment transaction verified
+  - `ORDER_PENDING` - Processing resource delegation
+  - `ORDER_COMPLETED` - Resources successfully delegated
+</ResponseField>
+
+#### Resource Details
+<ResponseField name="details" type="object">
+  <Expandable title="Resource Details">
+    <ResponseField name="resourceType" type="string">
+      Type of resource (currently only "ENERGY")
+    </ResponseField>
+    <ResponseField name="amount.value" type="number">
+      Requested amount of resource units
+    </ResponseField>
+    <ResponseField name="amount.sunValue" type="bigint">
+      Resource amount in SUN units
+    </ResponseField>
+    <ResponseField name="duration" type="string">
+      Duration: FIVE_MIN, FIFTEEN_MIN, or ONE_HOUR
+    </ResponseField>
+    <ResponseField name="target" type="array">
+      Array of TRON addresses receiving the delegation
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+#### Payment Information
+<ResponseField name="payment" type="object">
+  <Expandable title="Payment Details">
+    <ResponseField name="amount.trx" type="number">
+      Payment amount in TRX
+    </ResponseField>
+    <ResponseField name="amount.sun" type="bigint">
+      Payment amount in SUN (1 TRX = 1,000,000 SUN)
+    </ResponseField>
+    <ResponseField name="status" type="string">
+      Payment status (PAYMENT_PENDING, PAID)
+    </ResponseField>
+    <ResponseField name="dueDate" type="string">
+      Payment must be received before this timestamp
+    </ResponseField>
+    <ResponseField name="paymentAddress" type="string">
+      TRON address where payment should be sent
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example Request
+
+```bash 
+curl -X GET \
+  'https://tronspace.vip/api/public/order/61553646-39de-4ab2-bd0d-d51a22da9679' \
+  -H 'x-api-key: your-api-key'
+```
+
+### Example Response
+
+```json
+{
+  "json": {
+    "id": "61553646-39de-4ab2-bd0d-d51a22da9679",
+    "status": "PAYMENT_PENDING",
+    "details": {
+      "resourceType": "ENERGY",
+      "amount": {
+        "value": 60001,
+        "sunValue": 5342967805
+      },
+      "duration": "FIVE_MIN",
+      "target": ["TAA9KiqKZSU2tUhqrPpYBHPprxnKVwnik5"]
+    },
+    "payment": {
+      "amount": {
+        "trx": 6.0001,
+        "sun": 6000100
+      },
+      "status": "PAYMENT_PENDING",
+      "dueDate": "2025-01-23 12:34:21",
+      "paymentAddress": "TBQfnrQzPveCqxZ9prJd8fZY2KJ5dyCqDz"
+    },
+    "timestamps": {
+      "created": "2025-01-23 12:24:21",
+      "updated": "2025-01-23 12:24:21"
+    }
+  },
+  "meta": {
+    "values": {
+      "delegations": ["undefined"]
+    }
+  }
+}
+```
