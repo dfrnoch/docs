@@ -48,15 +48,13 @@
     {
       "group": "Public endpoints",
       "pages": [
+        "api-reference/endpoint/post-order",
         "api-reference/endpoint/get-user",
-        "api-reference/endpoint/get-order",
-        "api-reference/endpoint/post-order"
+        "api-reference/endpoint/get-order"
       ]
     }
   ],
   "footerSocials": {
-    "telegram": "https://x.com/mintlify",
-    "github": "https://github.com/mintlify",
-    "linkedin": "https://linkedin.com/company/mintlify"
+    "telegram": "https://t.me/tronspace_vip"
   }
 }

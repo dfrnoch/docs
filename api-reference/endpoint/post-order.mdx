@@ -1,11 +1,13 @@
 ---
-title: 'POST Order'
+title: 'Create single or multiple order'
 description: 'Create a new order for TRON resources'
 ---
 
 ## Create Order
 
-Create a new order for TRON network resources.
+<Warning>
+<b>To create multiple order, use the endpoint with an array of target addresses.</b>
+</Warning>
 
 ### Endpoint
 
@@ -21,8 +23,8 @@ POST https://tronspace.vip/api/public/order
 
 ### Request Body
 
-<ParamField body="targetAddress" type="array" required>
-  Array of TRON wallet addresses to receive the resources
+<ParamField body="targetAddress" type="array | string" required>
+  One or more TRON wallet addresses to receive the resources
 </ParamField>
 
 <ParamField body="duration" type="string" required>
@@ -45,7 +47,12 @@ POST https://tronspace.vip/api/public/order
 
 ```json
 {
-  "targetAddress": ["TAA9KiqKZSU2tUhqrPpYBHPprxnKVwnik5"],
+  // Single order
+  "targetAddress": "TAA9KiqKZSU2tUhqrPpYBHPprxnKVwnik5",
+
+  // Multiple order
+  "targetAddresses": ["TAA9KiqKZSU2tUhqrPpYBHPprxnKVwnik5", "TAA9KiqKZSU2tUhqrPpYBHPprxnKVwnik5"],
+
   "duration": "5m",
   "resourceType": 0,
   "resourceAmount": 60000

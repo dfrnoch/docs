@@ -1,5 +1,5 @@
 ---
-title: 'GET Order'
+title: 'Query order details'
 description: 'Retrieve an existing TRON resource order'
 ---
 
@@ -68,13 +68,44 @@ GET https://tronspace.vip/api/public/order/{id}
       Payment amount in SUN (1 TRX = 1,000,000 SUN)
     </ResponseField>
     <ResponseField name="status" type="string">
-      Payment status (PAYMENT_PENDING, PAID)
+      Payment status (PAYMENT_PENDING, PAID, ORDER_COMPLETED)
     </ResponseField>
     <ResponseField name="dueDate" type="string">
       Payment must be received before this timestamp
     </ResponseField>
     <ResponseField name="paymentAddress" type="string">
       TRON address where payment should be sent
+    </ResponseField>
+    <ResponseField name="transactionId" type="string">
+      (Optional) Payment transaction identifier when order is completed
+    </ResponseField>
+    <ResponseField name="paidAt" type="string">
+      (Optional) Timestamp when payment was confirmed
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+#### Delegations
+<ResponseField name="delegations" type="array">
+  Array of delegation objects when the order is completed.
+  <Expandable title="Delegations">
+    <ResponseField name="at" type="string">
+      Timestamp when delegation was made
+    </ResponseField>
+    <ResponseField name="to" type="string">
+      TRON address receiving the delegation
+    </ResponseField>
+    <ResponseField name="amount" type="number">
+      Delegated amount in SUN
+    </ResponseField>
+    <ResponseField name="tx" type="string">
+      Transaction identifier of the delegation
+    </ResponseField>
+    <ResponseField name="status" type="string">
+      Delegation status (e.g., ACTIVE, RECLAIMED)
+    </ResponseField>
+    <ResponseField name="reclaimDate" type="string">
+      Timestamp when delegation can be reclaimed
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -92,29 +123,43 @@ curl -X GET \
 ```json
 {
   "json": {
-    "id": "61553646-39de-4ab2-bd0d-d51a22da9679",
-    "status": "PAYMENT_PENDING",
+    "id": "71e6b03a-dab7-4cc4-b944-0607c3ca3b47",
+    "status": "ORDER_COMPLETED",
     "details": {
       "resourceType": "ENERGY",
       "amount": {
-        "value": 60001,
-        "sunValue": 5342967805
+        "value": 300,
+        "sunValue": 941248400
       },
       "duration": "FIVE_MIN",
-      "target": ["TAA9KiqKZSU2tUhqrPpYBHPprxnKVwnik5"]
+      "target": [
+        "TAA9KiqKZSU2tUhqrPpYBHPprxnKVwnik5"
+      ]
     },
     "payment": {
       "amount": {
-        "trx": 6.0001,
-        "sun": 6000100
+        "trx": 1.8,
+        "sun": 1800000
       },
-      "status": "PAYMENT_PENDING",
-      "dueDate": "2025-01-23 12:34:21",
-      "paymentAddress": "TBQfnrQzPveCqxZ9prJd8fZY2KJ5dyCqDz"
+      "status": "ORDER_COMPLETED",
+      "dueDate": "2025-02-10 14:30:17",
+      "paymentAddress": "TPhkG9HtZdknVFA11jFFsceMKTiiHgy62A",
+      "transactionId": "9aab50ca24246c3911d69df9e75c675b19610854076bfd4ff75e2d039a99c80f",
+      "paidAt": "2025-02-10 14:20:36"
     },
+    "delegations": [
+      {
+        "at": "2025-02-10 14:20:50",
+        "to": "TAA9KiqKZSU2tUhqrPpYBHPprxnKVwnik5",
+        "amount": 941248400,
+        "tx": "b73a9ed2b41dbda8c628c981926501568082db2e433681751e94e4ddc660669d",
+        "status": "ACTIVE",
+        "reclaimDate": "2025-02-10 14:25:50"
+      }
+    ],
     "timestamps": {
-      "created": "2025-01-23 12:24:21",
-      "updated": "2025-01-23 12:24:21"
+      "created": "2025-02-10 14:20:17",
+      "updated": "2025-02-10 14:20:50"
     }
   },
   "meta": {
@@ -123,4 +168,6 @@ curl -X GET \
     }
   }
 }
-```
+``` 
+
+This update includes the "delegations" field in both the response fields explanation and the example response.
